@@ -6,7 +6,10 @@ pipeline {
         maven "maven3"
     }
 */	
-    
+        environment {
+        registry = "anildevops23/vproappdock"
+        registryCredential = 'dockerhub'
+    }
 	
     stages{
         
@@ -43,6 +46,24 @@ pipeline {
                     echo 'Generated Analysis Result'
                 }
             }
+        }
+	    
+   stage('Building image') {
+            steps{
+              script {
+                dockerImage = docker.build registry + ":$BUILD_NUMBER"
+              }
+            }
+        }
+   stage('Deploy Image') {
+          steps{
+            script {
+              docker.withRegistry( '', registryCredential ) {
+                dockerImage.push("$BUILD_NUMBER")
+                dockerImage.push('latest')
+              }
+            }
+          }
         }
     }
 }
